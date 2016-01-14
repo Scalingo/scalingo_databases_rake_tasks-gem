@@ -1,4 +1,4 @@
-# ScalingoDbTasks
+# ScalingoDatabasesRakeTasks
 
 A gem providing rake tasks for database manipulations on Scalingo. 
 
@@ -7,7 +7,7 @@ A gem providing rake tasks for database manipulations on Scalingo.
 Add this line to your application's Gemfile:
 
 ```ruby
-gem 'scalingo_db_tasks'
+gem 'scalingo_databases_rake_tasks'
 ```
 
 And then execute:
@@ -16,13 +16,13 @@ And then execute:
 
 Or install it yourself as:
 
-    $ gem install scalingo_db_tasks
+    $ gem install scalingo_databases_rake_tasks
 
 ## Usage
 
 For Rails apps nothing to do.
 
-For other apps, add `require "scalingo_db_tasks"` to your Rakefile.
+For other apps, add `require "scalingo_databases_rake_tasks"` to your Rakefile.
 
 ## Development
 
@@ -32,5 +32,5 @@ To install this gem onto your local machine, run `bundle exec rake install`. To 
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/Scalingo/scalingo_db_tasks.
+Bug reports and pull requests are welcome on GitHub at https://github.com/Scalingo/scalingo_databases_rake_tasks.
 
