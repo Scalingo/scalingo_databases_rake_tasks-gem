@@ -2,7 +2,7 @@ namespace :scalingo do
   namespace :mysql do
     desc "Backup local MySQL database"
     task :backup_local => :environment do
-      database, user, password, host, port = ScalingoMySQL.local_credentials ENV['FILE']
+      database, user, password, host, port = ScalingoMySQL.local_credentials
       ScalingoMySQL.backup(database, user, password, host, port)
     end
 
@@ -15,7 +15,7 @@ namespace :scalingo do
 
     desc "Restore local MySQL database using a Scalingo backup"
     task :restore_local => :environment do
-      database, user, password, host, port = ScalingoMySQL.local_credentials ENV['FILE']
+      database, user, password, host, port = ScalingoMySQL.local_credentials
       ScalingoMySQL.restore(database, user, password, host, port)
     end
 
@@ -33,17 +33,14 @@ namespace :scalingo do
       DUMP_NAME = "scalingo_mysql_dump.sql"
       DUMP_PATH = Dir.tmpdir() + "/#{DUMP_NAME}"
 
-      def self.local_credentials(filename)
-        filename ||= "database"
-        result = File.read "#{Rails.root}/config/#{filename}.yml"
-        config_file = YAML::load(ERB.new(result).result)
-
+      def self.local_credentials
+        config = ActiveRecord::Base.configurations[Rails.env]
         return [
-          config_file[Rails.env]['database'],
-          config_file[Rails.env]['username'],
-          config_file[Rails.env]['password'],
-          config_file[Rails.env]['hosts'].try!(:first) || "127.0.0.1",
-          config_file[Rails.env]['port'] || "3306",
+          config['database'],
+          config['username'],
+          config['password'],
+          config['host'] || "127.0.0.1",
+          config['port'] || "3306",
         ]
       end
 

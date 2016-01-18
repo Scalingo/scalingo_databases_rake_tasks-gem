@@ -2,28 +2,28 @@ namespace :scalingo do
   namespace :postgresql do
     desc "Backup local PostgreSQL database"
     task :backup_local => :environment do
-      database, user, password, host = ScalingoPostgreSQL.local_credentials ENV['FILE']
-      ScalingoPostgreSQL.backup(database, user, password, host)
+      database, user, password, host, port = ScalingoPostgreSQL.local_credentials
+      ScalingoPostgreSQL.backup(database, user, password, host, port)
     end
 
     desc "Backup remote Scalingo PostgreSQL database"
     task :backup_remote => :environment do
       open_tunnel("SCALINGO_POSTGRESQL_URL") do |database, user, password|
-        ScalingoPostgreSQL.backup(database, user, password, "127.0.0.1:27717")
+        ScalingoPostgreSQL.backup(database, user, password, "127.0.0.1", "27717")
       end
     end
 
     desc "Restore local PostgreSQL database using a Scalingo backup"
     task :restore_local => :environment do
-      database, user, password, host = ScalingoPostgreSQL.local_credentials ENV['FILE']
-      ScalingoPostgreSQL.restore(database, user, password, host)
+      database, user, password, host, port = ScalingoPostgreSQL.local_credentials
+      ScalingoPostgreSQL.restore(database, user, password, host, port)
     end
 
     desc "Restore remote Scalingo PostgreSQL database using local backup"
     task :restore_remote => :environment do
       open_tunnel("SCALINGO_POSTGRESQL_URL") do |database, user, password|
         confirm_remote(database)
-        ScalingoPostgreSQL.restore(database, user, password, "127.0.0.1:27717")
+        ScalingoPostgreSQL.restore(database, user, password, "127.0.0.1", "27717")
       end
     end
 
@@ -33,21 +33,18 @@ namespace :scalingo do
       DUMP_NAME = "scalingo_postgresql_dump"
       DUMP_PATH = Dir.tmpdir() + "/#{DUMP_NAME}"
 
-      def self.local_credentials(filename)
-        filename ||= "database"
-        result = File.read "#{Rails.root}/config/#{filename}.yml"
-        config_file = YAML::load(ERB.new(result).result)
-
+      def self.local_credentials
+        config = ActiveRecord::Base.configurations[Rails.env]
         return [
-          config_file[Rails.env]['database'],
-          config_file[Rails.env]['username'],
-          config_file[Rails.env]['password'],
-          config_file[Rails.env]['hosts'].try!(:first) || "127.0.0.1:5432",
+          config['database'],
+          config['username'],
+          config['password'],
+          config['host'] || "127.0.0.1",
+          config['port'] || "5432",
         ]
       end
 
-      def self.backup database, user, password, hostport
-        host, port = hostport.split(":")
+      def self.backup database, user, password, host, port
         user_cmd = ""
         password_cmd = ""
         if not user.blank?
@@ -68,8 +65,7 @@ namespace :scalingo do
         system(cmd)
       end
 
-      def self.restore database, user, password, hostport
-        host, port = hostport.split(":")
+      def self.restore database, user, password, host, port
         user_cmd = ""
         password_cmd = ""
         if not user.blank?
