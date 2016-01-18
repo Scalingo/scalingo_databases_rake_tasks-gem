@@ -1,6 +1,37 @@
 # ScalingoDatabasesRakeTasks
 
-A gem providing rake tasks for database manipulations on Scalingo. 
+A gem providing rake tasks such as **backup** and **restore** for database manipulations on [Scalingo](https://scalingo.com/).
+
+Currently supported databases:
+- MongoDB
+- MySQL
+- PostgreSQL
+
+Available tasks for **each** database:
+- `backup_local`: make a backup of local database
+- `backup_remote`: make a backup of remote Scalingo database
+- `restore_local`: restore a local database with an archive
+- `restore_remote`: restore a remote Scalingo database with an archive
+
+## Usage
+
+For remote operations you will have to set your shell's environment variable `APP` as your app name on Scalingo. The variable `DB_ENV_NAME` is optional, by default it will be the one generated when you provisionned the database addon. For example, if your database is a MongoDB then the variable will be `SCALINGO_MONGO_URL`.
+
+### Commands
+
+To see the complete list of tasks: `rake -T scalingo`
+
+Example of commands for MongoDB:
+- `rake scalingo:mongodb:backup_local`
+- `rake scalingo:mongodb:backup_remote`
+- `rake scalingo:mongodb:restore_local`
+- `rake scalingo:mongodb:restore_remote`
+
+### Backup and Restore
+
+Backups are stored under the `tmp` folder of your project, the database type is part of the archive name (e.g. scalingo_mongodb_dump.tar.gz).
+
+To restore from a specific archive, you'll have to give it the default archive name and put it inside of `tmp` folder before running the rake command.
 
 ## Installation
 
@@ -17,8 +48,6 @@ And then execute:
 Or install it yourself as:
 
     $ gem install scalingo_databases_rake_tasks
-
-## Usage
 
 For Rails apps nothing to do.
 
