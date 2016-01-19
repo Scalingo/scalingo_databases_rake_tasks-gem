@@ -77,12 +77,20 @@ namespace :scalingo do
         end
 
         base_cmd = "tar xvzOf #{archive_name DUMP_NAME} | "
-        pg_cmd = "pg_restore -O -n public --clean --if-exists #{user_cmd} -h #{host} -p #{port} -d #{database}"
+        pg_cmd = "pg_restore -O -n public --clean"
+        pg_cmd << " --if-exists" if pg_restore_after_9_4
+        pg_cmd << " #{user_cmd} -h #{host} -p #{port} -d #{database}"
         output = "#{base_cmd} PGPASSWORD=[FILTERED] #{pg_cmd}"
         cmd = "#{base_cmd} #{password_cmd} #{pg_cmd}"
 
         puts "*** Executing #{output}"
         system(cmd)
+      end
+
+      def pg_restore_after_9_4?
+        version = `pg_restore --version`.split.last
+        major, minor = version.split('.')
+        major.to_i >= 9 && minor.to_i >= 4
       end
     end
 

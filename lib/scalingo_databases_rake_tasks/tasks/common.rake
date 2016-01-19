@@ -24,7 +24,7 @@ namespace :scalingo do
     output = `scalingo -a #{app} env | grep "^#{variable}=" | cut -d '=' -f2 | tr -d '\n'`
     uri = URI(output.strip)
     if uri.to_s.blank?
-      raise VariableError
+      raise VariableError, "Environment variable #{variable} not found."
     else
       [uri.path[1..-1], uri.user, uri.password]
     end
@@ -70,10 +70,10 @@ namespace :scalingo do
     app = ENV["APP"]
     variable = ENV["DB_ENV_NAME"] || default_env_name
     unless app
-      abort 'ENV["APP"] missing.'
+      abort "Environment variable APP not found."
     end
     unless variable
-      abort 'ENV["DB_ENV_NAME"] missing.'
+      abort "Environment variable DB_ENV_NAME not found."
     end
 
     database, user, password = remote_credentials(app, variable)
