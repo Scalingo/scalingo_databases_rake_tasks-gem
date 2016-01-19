@@ -35,22 +35,21 @@ namespace :scalingo do
     puts "*** Executing #{cmd}"
     i, o, thr = Open3::pipeline_rw cmd
 
-    stdin = $stdin
     while true
       read_line(o) do |line|
         # puts line # debug
         if line.include?("Encrypted")
-          puts line
-          $stdin = i
+          abort "*** Your SSH key is encrypted. This gem is only compatible with SSH agents or unencrypted keys."
         end
 
         if line.include?("address already in use")
-          return -1
+          abort "*** Address 127.0.0.1:27717 is already in use."
         end
 
         if line.include?("'127.0.0.1:27717'")
-          $stdin = stdin
           return thr[0].pid
+        elsif line.include?("'127.0.0.1:")
+          abort "*** Address 127.0.0.1:27717 is already in use."
         end
       end
     end
