@@ -16,6 +16,10 @@ namespace :scalingo do
     "#{Rails.root}/tmp/#{name}.tar.gz"
   end
 
+  def make_tmp_dir
+    FileUtils.mkdir_p 'tmp'
+  end
+
   def remote_credentials app, variable
     output = `scalingo -a #{app} env | grep "^#{variable}=" | cut -d '=' -f2 | tr -d '\n'`
     uri = URI(output.strip)
@@ -29,23 +33,38 @@ namespace :scalingo do
   def start_scalingo_tunnel app, variable
     cmd = "scalingo -a #{app} db-tunnel -p 27717 #{variable}"
     puts "*** Executing #{cmd}"
-    o, thr = Open3::pipeline_r cmd
-    out = ""
-    while out == ""
-      begin
-      out = o.read_nonblock(200)
-      rescue IO::EAGAINWaitReadable ; end
-    end
+    i, o, thr = Open3::pipeline_rw cmd
 
-    while !out.include?("127.0.0.1:27717") and !out.include?("address already in use")
+    stdin = $stdin
+    while true
+      read_line(o) do |line|
+        # puts line # debug
+        if line.include?("Encrypted")
+          puts line
+          $stdin = i
+        end
+
+        if line.include?("address already in use")
+          return -1
+        end
+
+        if line.include?("'127.0.0.1:27717'")
+          $stdin = stdin
+          return thr[0].pid
+        end
+      end
+    end
+  end
+
+  def read_line out
+    line = ""
+    while line == ""
       sleep 0.2
       begin
-        out = o.read_nonblock(200)
+        line = out.read_nonblock(200)
+        yield(line)
       rescue EOFError, IO::EAGAINWaitReadable ; end
     end
-
-    return -1 if out.include? "address already in use"
-    return thr[0].pid
   end
 
   def open_tunnel default_env_name

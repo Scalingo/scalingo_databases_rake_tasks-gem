@@ -62,6 +62,7 @@ namespace :scalingo do
         end
 
         puts "*** Executing #{output}"
+        make_tmp_dir
         system(cmd)
       end
 

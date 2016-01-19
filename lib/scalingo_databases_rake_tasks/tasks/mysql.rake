@@ -60,6 +60,7 @@ namespace :scalingo do
         public_cmd << tar_cmd
 
         puts "*** Executing #{public_cmd}"
+        make_tmp_dir
         system(cmd)
       end
 
