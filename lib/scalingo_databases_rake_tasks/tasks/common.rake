@@ -16,6 +16,10 @@ namespace :scalingo do
     "#{Rails.root}/tmp/#{name}.tar.gz"
   end
 
+  def archive_contain_sql path
+    `tar tf #{path} | grep "\.sql$" | wc -l`.to_i > 0
+  end
+
   def make_tmp_dir
     FileUtils.mkdir_p 'tmp'
   end
@@ -40,6 +44,10 @@ namespace :scalingo do
         # puts line # debug
         if line.include?("Encrypted")
           abort "*** Your SSH key is encrypted. This gem is only compatible with SSH agents or unencrypted keys."
+        end
+
+        if line.include?("An error occured")
+          abort "*** #{line}"
         end
 
         if line.include?("address already in use")

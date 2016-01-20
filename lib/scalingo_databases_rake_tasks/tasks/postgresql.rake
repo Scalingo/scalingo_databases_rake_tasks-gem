@@ -53,7 +53,9 @@ namespace :scalingo do
             password_cmd = "PGPASSWORD=#{password}"
           end
         end
-        base_cmd = "pg_dump -O -n public --format=c #{user_cmd} -h #{host} -p #{port} -d #{database}"
+        exclude_cmd = "-N 'information_schema' -N '^pg_*'"
+        base_cmd = "pg_dump --no-owner --no-privileges --clean #{exclude_cmd} --format=c #{user_cmd} -h #{host} -p #{port} -d #{database}"
+        base_cmd << " --if-exists" if pg_restore_after_9_4?
         output = "rm -rf #{DUMP_PATH} 2>/dev/null && /usr/bin/env PGPASSWORD=[FILTERED] #{base_cmd}"
         cmd = "rm -rf #{DUMP_PATH} 2>/dev/null && /usr/bin/env #{password_cmd} #{base_cmd}"
 
@@ -67,27 +69,45 @@ namespace :scalingo do
       end
 
       def self.restore database, user, password, host, port
-        user_cmd = ""
-        password_cmd = ""
-        if not user.blank?
-          user_cmd = " -U #{user}"
-          if not password.blank?
-            password_cmd = "PGPASSWORD=#{password}"
+        if archive_contain_sql(archive_name DUMP_NAME)
+          user_cmd = ""
+          password_cmd = ""
+          if not user.blank?
+            user_cmd = " -U #{user}"
+            if not password.blank?
+              password_cmd = "PGPASSWORD=#{password}"
+            end
           end
+
+          base_cmd = "tar xvzOf #{archive_name DUMP_NAME} | "
+          pg_cmd = "psql #{user_cmd} -h #{host} -p #{port} -d #{database} -f -"
+          output = "#{base_cmd} PGPASSWORD=[FILTERED] #{pg_cmd}"
+          cmd = "#{base_cmd} #{password_cmd} #{pg_cmd}"
+
+          puts "*** Executing #{output}"
+          system(cmd)
+        else
+          user_cmd = ""
+          password_cmd = ""
+          if not user.blank?
+            user_cmd = " -U #{user}"
+            if not password.blank?
+              password_cmd = "PGPASSWORD=#{password}"
+            end
+          end
+          base_cmd = "tar xvzOf #{archive_name DUMP_NAME} | "
+          pg_cmd = "pg_restore --no-owner --no-privileges --clean"
+          pg_cmd << " --if-exists" if pg_restore_after_9_4?
+          pg_cmd << " #{user_cmd} -h #{host} -p #{port} -d #{database}"
+          output = "#{base_cmd} PGPASSWORD=[FILTERED] #{pg_cmd}"
+          cmd = "#{base_cmd} #{password_cmd} #{pg_cmd}"
+
+          puts "*** Executing #{output}"
+          system(cmd)
         end
-
-        base_cmd = "tar xvzOf #{archive_name DUMP_NAME} | "
-        pg_cmd = "pg_restore -O -n public --clean"
-        pg_cmd << " --if-exists" if pg_restore_after_9_4
-        pg_cmd << " #{user_cmd} -h #{host} -p #{port} -d #{database}"
-        output = "#{base_cmd} PGPASSWORD=[FILTERED] #{pg_cmd}"
-        cmd = "#{base_cmd} #{password_cmd} #{pg_cmd}"
-
-        puts "*** Executing #{output}"
-        system(cmd)
       end
 
-      def pg_restore_after_9_4?
+      def self.pg_restore_after_9_4?
         version = `pg_restore --version`.split.last
         major, minor = version.split('.')
         major.to_i >= 9 && minor.to_i >= 4
