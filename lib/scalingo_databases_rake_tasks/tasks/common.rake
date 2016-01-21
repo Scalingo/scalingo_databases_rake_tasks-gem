@@ -1,5 +1,6 @@
 require 'uri'
 require 'open3'
+require 'timeout'
 
 namespace :scalingo do
   private
@@ -42,8 +43,21 @@ namespace :scalingo do
     end
     puts "*** Executing #{cmd}"
     i, o, thr = Open3::pipeline_rw cmd
+    pid = thr[0].pid
+    puts '*** Tunnel opened'
 
-    while true
+    close_tunnel = lambda {
+      if thr[0].status
+        thr[0].kill
+        Process.kill("INT", pid) if pid != -1
+        puts '*** Tunnel closed'
+      end
+    }
+    at_exit do
+      close_tunnel.call
+    end
+
+    loop do
       read_line(o) do |line|
         # puts line # debug
         if line.include?("Encrypted")
@@ -59,7 +73,7 @@ namespace :scalingo do
         end
 
         if line.include?("'127.0.0.1:27717'")
-          return thr[0].pid
+          return [pid, close_tunnel]
         elsif line.include?("'127.0.0.1:")
           abort "*** Address 127.0.0.1:27717 is already in use."
         end
@@ -89,13 +103,17 @@ namespace :scalingo do
     end
 
     database, user, password = remote_credentials(app, variable)
-    pid = start_scalingo_tunnel(app, variable)
-    at_exit do
-      Process.kill("INT", pid) if pid != -1
-      puts '*** Tunnel closed'
+
+    begin
+      pid, close_tunnel = Timeout::timeout(15) do
+        start_scalingo_tunnel(app, variable)
+      end
+    rescue Timeout::Error => e
+      abort "*** Error in tunnel: #{e}"
     end
-    puts '*** Tunnel opened'
+
     yield(database, user, password)
+    close_tunnel.call
   end
 
   class VariableError < StandardError
