@@ -35,7 +35,11 @@ namespace :scalingo do
   end
 
   def start_scalingo_tunnel app, variable
-    cmd = "scalingo -a #{app} db-tunnel -p 27717 #{variable}"
+    if ENV['SSH_IDENTITY']
+      cmd = "scalingo -a #{app} db-tunnel -i #{ENV['SSH_IDENTITY']} -p 27717 #{variable}"
+    else
+      cmd = "scalingo -a #{app} db-tunnel -p 27717 #{variable}"
+    end
     puts "*** Executing #{cmd}"
     i, o, thr = Open3::pipeline_rw cmd
 

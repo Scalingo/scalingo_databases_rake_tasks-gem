@@ -33,6 +33,10 @@ Backups are stored under the `tmp` folder of your project, the database type is 
 
 To restore from a specific archive, you'll have to give it the default archive name and put it inside of `tmp` folder before running the rake command.
 
+### SSH Identity
+
+If you are not using a SSH agent and your default SSH identity file is not `id_rsa` you can specify your custom identity file path with the `SSH_IDENTITY` variable.
+
 ## Installation
 
 Add this line to your application's Gemfile:
