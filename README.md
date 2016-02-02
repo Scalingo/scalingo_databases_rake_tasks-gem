@@ -19,10 +19,17 @@ For remote operations you will have to set your shell's environment variable `AP
 
 ### Available Env Vars
 
+Global:
 - `APP`: Scalingo app name (mandatory)
 - `DB_ENV_NAME`: Scalingo database connection var name, e.g. `SCALINGO_MONGO_URL` (optional)
-- `FILE`: your database config file name, e.g. `database` (optional)
 - `SSH_IDENTITY`: specify a SSH identity file, e.g. `~/.ssh/id_rsa` (optional)
+
+MongoDB:
+- `FILE`: your database config file name, e.g. `database` (optional)
+
+PostgreSQL:
+- `PG_DUMP_CMD`: specify the path or command name of the tool to use, default: `pg_dump` (optional)
+- `PG_RESTORE_CMD`:specify the path or command name of the tool to use, default: `pg_restore` (optional)
 
 ### Commands
 
