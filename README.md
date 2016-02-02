@@ -17,6 +17,13 @@ Available tasks for **each** database:
 
 For remote operations you will have to set your shell's environment variable `APP` as your app name on Scalingo. The variable `DB_ENV_NAME` is optional, by default it will be the one generated when you provisionned the database addon. For example, if your database is a MongoDB then the variable will be `SCALINGO_MONGO_URL`.
 
+### Available Env Vars
+
+- `APP`: Scalingo app name (mandatory)
+- `DB_ENV_NAME`: Scalingo database connection var name, e.g. `SCALINGO_MONGO_URL` (optional)
+- `FILE`: your database config file name, e.g. `database` (optional)
+- `SSH_IDENTITY`: specify a SSH identity file, e.g. `~/.ssh/id_rsa` (optional)
+
 ### Commands
 
 To see the complete list of tasks: `rake -T scalingo`
