@@ -45,6 +45,7 @@ namespace :scalingo do
       end
 
       def self.backup database, user, password, host, port
+        pg_dump_cmd = ENV["PG_DUMP_CMD"] || "pg_dump"
         user_cmd = ""
         password_cmd = ""
         if not user.blank?
@@ -54,7 +55,7 @@ namespace :scalingo do
           end
         end
         exclude_cmd = "-N 'information_schema' -N '^pg_*'"
-        base_cmd = "pg_dump --no-owner --no-privileges --clean #{exclude_cmd} --format=c #{user_cmd} -h #{host} -p #{port} -d #{database}"
+        base_cmd = "#{pg_dump_cmd} --no-owner --no-privileges --clean #{exclude_cmd} --format=c #{user_cmd} -h #{host} -p #{port} -d #{database}"
         base_cmd << " --if-exists" if pg_restore_after_9_4?
         output = "rm -rf #{DUMP_PATH} 2>/dev/null && /usr/bin/env PGPASSWORD=[FILTERED] #{base_cmd}"
         cmd = "rm -rf #{DUMP_PATH} 2>/dev/null && /usr/bin/env #{password_cmd} #{base_cmd}"
@@ -69,6 +70,7 @@ namespace :scalingo do
       end
 
       def self.restore database, user, password, host, port
+        pg_restore_cmd = ENV["PG_RESTORE_CMD"] || "pg_restore"
         if archive_contain_sql(archive_name DUMP_NAME)
           user_cmd = ""
           password_cmd = ""
@@ -96,7 +98,7 @@ namespace :scalingo do
             end
           end
           base_cmd = "tar xvzOf #{archive_name DUMP_NAME} | "
-          pg_cmd = "pg_restore --no-owner --no-privileges --clean"
+          pg_cmd = "#{pg_restore_cmd} --no-owner --no-privileges --clean"
           pg_cmd << " --if-exists" if pg_restore_after_9_4?
           pg_cmd << " #{user_cmd} -h #{host} -p #{port} -d #{database}"
           output = "#{base_cmd} PGPASSWORD=[FILTERED] #{pg_cmd}"
@@ -108,7 +110,8 @@ namespace :scalingo do
       end
 
       def self.pg_restore_after_9_4?
-        version = `pg_restore --version`.split.last
+        pg_restore_cmd = ENV["PG_RESTORE_CMD"] || "pg_restore"
+        version = `#{pg_restore_cmd} --version`.split.last
         major, minor = version.split('.')
         major.to_i >= 9 && minor.to_i >= 4
       end
