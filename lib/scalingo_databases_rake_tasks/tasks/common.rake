@@ -25,17 +25,30 @@ namespace :scalingo do
     FileUtils.mkdir_p 'tmp'
   end
 
+  def app_exists? app
+    `scalingo apps | grep " #{app} "`
+    $?.success?
+  end
+
   def remote_credentials app, variable
+    unless app_exists? app
+      abort "*** App #{app} does not exists."
+    end
+
     output = `scalingo -a #{app} env | grep "^#{variable}=" | cut -d '=' -f2 | tr -d '\n'`
     uri = URI(output.strip)
     if uri.to_s.blank?
-      raise VariableError, "Environment variable #{variable} not found."
+      abort "*** Environment variable #{variable} not found."
     else
       [uri.path[1..-1], uri.user, uri.password]
     end
   end
 
   def start_scalingo_tunnel app, variable
+    unless app_exists? app
+      abort "*** App #{app} does not exists."
+    end
+
     if ENV['SSH_IDENTITY']
       cmd = "scalingo -a #{app} db-tunnel -i #{ENV['SSH_IDENTITY']} -p 27717 #{variable}"
     else
@@ -96,10 +109,10 @@ namespace :scalingo do
     app = ENV["APP"]
     variable = ENV["DB_ENV_NAME"] || default_env_name
     unless app
-      abort "Environment variable APP not found."
+      abort "*** Environment variable APP not found."
     end
     unless variable
-      abort "Environment variable DB_ENV_NAME not found."
+      abort "*** Environment variable DB_ENV_NAME not found."
     end
 
     database, user, password = remote_credentials(app, variable)
@@ -115,9 +128,4 @@ namespace :scalingo do
     yield(database, user, password)
     close_tunnel.call
   end
-
-  class VariableError < StandardError
-
-  end
-
 end
