@@ -55,8 +55,10 @@ namespace :scalingo do
           end
         end
         exclude_cmd = "-N 'information_schema' -N '^pg_*'"
-        base_cmd = "#{pg_dump_cmd} --no-owner --no-privileges --clean #{exclude_cmd} --format=c #{user_cmd} -h #{host} -p #{port} -d #{database}"
+        base_cmd = "#{pg_dump_cmd} --no-owner --no-privileges --clean #{exclude_cmd} --format=c #{user_cmd} -h #{host} -p #{port}"
         base_cmd << " --if-exists" if pg_restore_after_9_4?
+        base_cmd << " -d" unless pg_restore_9_1?
+        base_cmd << " #{database}"
         output = "rm -rf #{DUMP_PATH} 2>/dev/null && /usr/bin/env PGPASSWORD=[FILTERED] #{base_cmd}"
         cmd = "rm -rf #{DUMP_PATH} 2>/dev/null && /usr/bin/env #{password_cmd} #{base_cmd}"
 
@@ -114,6 +116,13 @@ namespace :scalingo do
         version = `#{pg_restore_cmd} --version`.split.last
         major, minor = version.split('.')
         major.to_i >= 9 && minor.to_i >= 4
+      end
+      
+      def self.pg_restore_9_1?
+        pg_restore_cmd = ENV["PG_RESTORE_CMD"] || "pg_restore"
+        version = `#{pg_restore_cmd} --version`.split.last
+        major, minor = version.split('.')
+        major.to_i >= 9 && minor.to_i >= 1
       end
     end
 
