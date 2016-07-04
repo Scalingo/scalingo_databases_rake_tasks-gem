@@ -1,3 +1,7 @@
+## 0.1.5 (2016-07-04)
+
+Compatibility with Mongoid 5
+
 ## 0.1.4 (2016-02-02)
 
 Features:

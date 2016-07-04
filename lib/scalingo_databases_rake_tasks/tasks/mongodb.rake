@@ -35,12 +35,13 @@ namespace :scalingo do
 
       def self.local_credentials(filename)
         filename ||= "mongoid"
+        key = self.mongoid_configuration_key
         result = File.read "#{Rails.root}/config/#{filename}.yml"
         config_file = YAML::load(ERB.new(result).result)
 
-        if config_file[Rails.env]['sessions']['default']['uri']
+        if config_file[Rails.env][key]['default']['uri']
           require 'uri'
-          uri = URI.parse config_file[Rails.env]['sessions']['default']['uri']
+          uri = URI.parse config_file[Rails.env][key]['default']['uri']
 
           return [
             uri.path[1..-1],
@@ -50,10 +51,10 @@ namespace :scalingo do
           ]
         else
           return [
-            config_file[Rails.env]['sessions']['default']['database'],
-            config_file[Rails.env]['sessions']['default']['username'],
-            config_file[Rails.env]['sessions']['default']['password'],
-            config_file[Rails.env]['sessions']['default']['hosts'].first || "127.0.0.1"
+            config_file[Rails.env][key]['default']['database'],
+            config_file[Rails.env][key]['default']['username'],
+            config_file[Rails.env][key]['default']['password'],
+            config_file[Rails.env][key]['default']['hosts'].first || "127.0.0.1"
           ]
         end
       end
@@ -100,6 +101,10 @@ namespace :scalingo do
 
         puts "*** Executing #{output}"
         system(cmd)
+      end
+
+      def self.mongoid_configuration_key
+        Mongoid::VERSION.starts_with?("5") ? "clients" : "sessions"
       end
     end
   end
