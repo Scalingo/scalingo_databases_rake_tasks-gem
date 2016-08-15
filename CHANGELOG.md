@@ -1,3 +1,7 @@
+## 0.1.6 (2016-08-15)
+
+Mongodump accept EXCLUDE_COLLECTIONS (names separated by ',') of not dumped collections
+
 ## 0.1.5 (2016-07-04)
 
 Compatibility with Mongoid 5
