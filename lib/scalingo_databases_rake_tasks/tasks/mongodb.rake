@@ -60,7 +60,10 @@ namespace :scalingo do
       end
 
       def self.backup database, user, password, host
-        cmd = "rm -rf #{DUMP_PATH} 2>/dev/null && /usr/bin/env mongodump -h #{host} -d #{database} -o #{DUMP_PATH}"
+        if ENV["EXCLUDED_COLLECTIONS"]
+          extra_args = ENV["EXCLUDED_COLLECTIONS"].split(",").map{|c| "--excludedCollection=\"${c}\""}.join(" ")
+        end
+        cmd = "rm -rf #{DUMP_PATH} 2>/dev/null && /usr/bin/env mongodump -h #{host} -d #{database} -o #{DUMP_PATH} #{extra_args}"
         if user.blank?
           output = cmd
         else
