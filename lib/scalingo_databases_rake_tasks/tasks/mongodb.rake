@@ -47,7 +47,7 @@ namespace :scalingo do
             uri.path[1..-1],
             uri.user,
             uri.password,
-            (uri.host || "127.0.0.1")
+            "#{(uri.host || "127.0.0.1")}:#{(uri.port || "27017")}"
           ]
         else
           return [

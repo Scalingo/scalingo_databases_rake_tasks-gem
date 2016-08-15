@@ -1,3 +1,7 @@
+## 0.1.7 (2016-08-15)
+
+Mongorestore local, fix non standard port when using MONGO_URL
+
 ## 0.1.6 (2016-08-15)
 
 Mongodump accept EXCLUDE_COLLECTIONS (names separated by ',') of not dumped collections
