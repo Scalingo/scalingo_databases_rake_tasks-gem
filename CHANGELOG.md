@@ -1,3 +1,7 @@
+## 0.1.8 (2016-10-03)
+
+Better way to compare Mongoid version
+
 ## 0.1.7 (2016-08-15)
 
 Mongorestore local, fix non standard port when using MONGO_URL
