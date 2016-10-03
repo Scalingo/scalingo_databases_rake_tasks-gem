@@ -107,7 +107,7 @@ namespace :scalingo do
       end
 
       def self.mongoid_configuration_key
-        Mongoid::VERSION.starts_with?("5") ? "clients" : "sessions"
+        Gem::Version.new(Mongoid::VERSION) > Gem::Version.new("5.0.0") ? "clients" : "sessions"
       end
     end
   end
