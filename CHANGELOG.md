@@ -1,3 +1,7 @@
+## 0.1.9 (2016-11-29)
+
+Compatibility with pg_restore 9.1
+
 ## 0.1.8 (2016-10-03)
 
 Better way to compare Mongoid version
