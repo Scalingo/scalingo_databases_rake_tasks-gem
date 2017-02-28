@@ -7,7 +7,7 @@ namespace :scalingo do
     end
 
     desc "Backup remote Scalingo PostgreSQL database"
-    task :backup_remote => :environment do
+    task :backup_remote do
       open_tunnel("SCALINGO_POSTGRESQL_URL") do |database, user, password|
         ScalingoPostgreSQL.backup(database, user, password, "127.0.0.1", "27717")
       end
@@ -20,7 +20,7 @@ namespace :scalingo do
     end
 
     desc "Restore remote Scalingo PostgreSQL database using local backup"
-    task :restore_remote => :environment do
+    task :restore_remote do
       open_tunnel("SCALINGO_POSTGRESQL_URL") do |database, user, password|
         confirm_remote(database)
         ScalingoPostgreSQL.restore(database, user, password, "127.0.0.1", "27717")
@@ -117,7 +117,7 @@ namespace :scalingo do
         major, minor = version.split('.')
         major.to_i >= 9 && minor.to_i >= 4
       end
-      
+
       def self.pg_restore_9_1?
         pg_restore_cmd = ENV["PG_RESTORE_CMD"] || "pg_restore"
         version = `#{pg_restore_cmd} --version`.split.last

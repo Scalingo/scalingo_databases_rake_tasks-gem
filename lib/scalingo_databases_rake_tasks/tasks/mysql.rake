@@ -7,7 +7,7 @@ namespace :scalingo do
     end
 
     desc "Backup remote Scalingo MySQL database"
-    task :backup_remote => :environment do
+    task :backup_remote do
       open_tunnel("SCALINGO_MYSQL_URL") do |database, user, password|
         ScalingoMySQL.backup(database, user, password, "127.0.0.1", 27717)
       end
@@ -20,7 +20,7 @@ namespace :scalingo do
     end
 
     desc "Restore remote Scalingo MySQL database using local backup"
-    task :restore_remote => :environment do
+    task :restore_remote do
       open_tunnel("SCALINGO_MYSQL_URL") do |database, user, password|
         confirm_remote(database)
         ScalingoMySQL.restore(database, user, password, "127.0.0.1", 27717)
