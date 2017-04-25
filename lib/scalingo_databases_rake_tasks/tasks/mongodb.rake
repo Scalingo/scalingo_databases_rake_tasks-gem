@@ -31,7 +31,6 @@ namespace :scalingo do
 
     module ScalingoMongoDB
       DUMP_NAME = "scalingo_mongodb_dump"
-      DUMP_PATH = Dir.tmpdir() + "/#{DUMP_NAME}"
 
       def self.local_credentials(filename)
         filename ||= "mongoid"
@@ -63,7 +62,8 @@ namespace :scalingo do
         if ENV["EXCLUDE_COLLECTIONS"]
           extra_args = ENV["EXCLUDE_COLLECTIONS"].split(",").map{|c| "--excludeCollection=\"#{c}\""}.join(" ")
         end
-        cmd = "rm -rf #{DUMP_PATH} 2>/dev/null && /usr/bin/env mongodump -h #{host} -d #{database} -o #{DUMP_PATH} #{extra_args}"
+        workdir = Dir.mktmpdir("scalingo-mongodb")
+        cmd = "/usr/bin/env mongodump -h #{host} -d #{database} -o #{workdir} #{extra_args}"
         if user.blank?
           output = cmd
         else
@@ -87,8 +87,9 @@ namespace :scalingo do
       end
 
       def self.restore database, user, password, host
-        cmd = "rm -rf #{DUMP_PATH}/ 2>/dev/null && tar xvzf #{archive_name DUMP_NAME} -C #{Dir.tmpdir()}"
-        cmd << " && /usr/bin/env mongorestore --drop -h #{host} -d #{database} --dir #{DUMP_PATH}/*"
+        workdir = Dir.mktmpdir("scalingo-mongodb")
+        cmd = "tar xvzf #{archive_name DUMP_NAME} -C #{workdir}"
+        cmd << " && /usr/bin/env mongorestore --drop -h #{host} -d #{database} --dir #{workdir}/*"
         if user.blank?
           output = cmd
         else
@@ -104,6 +105,8 @@ namespace :scalingo do
 
         puts "*** Executing #{output}"
         system(cmd)
+        puts "*** Cleaning #{workdir}"
+        FileUtils.rm_r workdir
       end
 
       def self.mongoid_configuration_key
