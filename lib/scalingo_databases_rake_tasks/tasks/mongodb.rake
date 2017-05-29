@@ -78,7 +78,7 @@ namespace :scalingo do
         end
 
         [cmd, output].each do |command|
-          command << " && tar czfh #{archive_name DUMP_NAME} -C #{Dir.tmpdir()} #{DUMP_NAME}"
+          command << " && tar czfh #{archive_name DUMP_NAME} #{workdir}"
         end
 
         puts "*** Executing #{output}"

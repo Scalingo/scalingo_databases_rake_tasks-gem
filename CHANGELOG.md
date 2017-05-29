@@ -1,3 +1,7 @@
+## 0.1.11 (2017-05-29)
+
+Fix path problem when compressing data after a mongodb remote backup
+
 ## 0.1.10 (2017-04-25)
 
 When extracting mongodb backup in /tmp, no permission to change utime on some system, so doing it in a sur directory
