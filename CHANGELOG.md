@@ -1,3 +1,7 @@
+## 0.1.12 (2017-05-29)
+
+Remove prefix path in mongodb dump archive
+
 ## 0.1.11 (2017-05-29)
 
 Fix path problem when compressing data after a mongodb remote backup

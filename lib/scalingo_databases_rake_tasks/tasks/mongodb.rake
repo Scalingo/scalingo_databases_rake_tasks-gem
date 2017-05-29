@@ -78,7 +78,7 @@ namespace :scalingo do
         end
 
         [cmd, output].each do |command|
-          command << " && tar czfh #{archive_name DUMP_NAME} #{workdir}"
+	  command << " && tar czfh #{archive_name DUMP_NAME} -C #{workdir} ."
         end
 
         puts "*** Executing #{output}"
@@ -89,7 +89,7 @@ namespace :scalingo do
       def self.restore database, user, password, host
         workdir = Dir.mktmpdir("scalingo-mongodb")
         cmd = "tar xvzf #{archive_name DUMP_NAME} -C #{workdir}"
-        cmd << " && /usr/bin/env mongorestore --drop -h #{host} -d #{database} --dir #{workdir}/*"
+        cmd << " && /usr/bin/env mongorestore --drop -h #{host} --db #{database} --dir #{workdir}/*"
         if user.blank?
           output = cmd
         else
