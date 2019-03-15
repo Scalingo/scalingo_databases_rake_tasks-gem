@@ -1,3 +1,7 @@
+## 0.2.0 (2019-03-15)
+
+Make it compatible with Scalingo CLI 1.10+
+
 ## 0.1.12 (2017-05-29)
 
 Remove prefix path in mongodb dump archive
