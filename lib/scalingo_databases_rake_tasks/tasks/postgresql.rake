@@ -1,3 +1,5 @@
+require 'active_support/core_ext/object/blank'
+
 namespace :scalingo do
   namespace :postgresql do
     desc "Backup local PostgreSQL database"
