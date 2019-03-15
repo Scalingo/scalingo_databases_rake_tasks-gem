@@ -1,3 +1,5 @@
+require 'tmpdir'
+
 namespace :scalingo do
   namespace :mysql do
     desc "Backup local MySQL database"
@@ -31,7 +33,7 @@ namespace :scalingo do
 
     module ScalingoMySQL
       DUMP_NAME = "scalingo_mysql_dump.sql"
-      DUMP_PATH = Dir.tmpdir() + "/#{DUMP_NAME}"
+      DUMP_PATH = Dir.tmpdir + "/#{DUMP_NAME}"
 
       def self.local_credentials
         config = ActiveRecord::Base.configurations[Rails.env]

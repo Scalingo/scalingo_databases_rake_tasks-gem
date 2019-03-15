@@ -1,3 +1,4 @@
+require 'active_support/core_ext/object/blank'
 require 'uri'
 require 'open3'
 require 'timeout'
@@ -14,7 +15,8 @@ namespace :scalingo do
   end
 
   def archive_name name = "dump"
-    "#{Rails.root}/tmp/#{name}.tar.gz"
+    dir = (defined? Rails) ? "#{Rails.root}/tmp" : Dir.pwd
+    return "#{dir}/#{name}.tar.gz"
   end
 
   def archive_contain_sql path
@@ -55,13 +57,13 @@ namespace :scalingo do
       cmd = "scalingo -a #{app} db-tunnel -p 27717 #{variable}"
     end
     puts "*** Executing #{cmd}"
-    i, o, thr = Open3::pipeline_rw cmd
-    pid = thr[0].pid
+    i, o, thr = Open3.popen2e cmd
+    pid = thr.pid
     puts '*** Tunnel opened'
 
     close_tunnel = lambda {
-      if thr[0].status
-        thr[0].kill
+      if thr.status
+        thr.kill
         Process.kill("INT", pid) if pid != -1
         puts '*** Tunnel closed'
       end
@@ -85,7 +87,7 @@ namespace :scalingo do
           abort "*** Address 127.0.0.1:27717 is already in use."
         end
 
-        if line.include?("'127.0.0.1:27717'")
+        if line.include?("\n127.0.0.1:27717\n") || line.match?(/^127.0.0.1:27717$/)
           return [pid, close_tunnel]
         elsif line.include?("'127.0.0.1:")
           abort "*** Address 127.0.0.1:27717 is already in use."
