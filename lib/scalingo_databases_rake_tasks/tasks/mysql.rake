@@ -36,7 +36,7 @@ namespace :scalingo do
       DUMP_PATH = Dir.tmpdir + "/#{DUMP_NAME}"
 
       def self.local_credentials
-        config = ActiveRecord::Base.configurations[Rails.env]
+        config= Rails.application.config_for(:database, env: Rails.env)
         return [
           config['database'],
           config['username'],
