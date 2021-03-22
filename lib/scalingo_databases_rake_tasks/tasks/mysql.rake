@@ -36,7 +36,7 @@ namespace :scalingo do
       DUMP_PATH = Dir.tmpdir + "/#{DUMP_NAME}"
 
       def self.local_credentials
-        config = ActiveRecord::Base.configurations[Rails.env]
+        config= Rails.application.config_for(:database, env: Rails.env)
         return [
           config['database'],
           config['username'],
@@ -47,7 +47,7 @@ namespace :scalingo do
       end
 
       def self.backup database, user, password, host, port
-        base_cmd = "/usr/bin/env mysqldump --add-drop-table --create-options --disable-keys --extended-insert --single-transaction --quick --set-charset -h #{host} -P #{port} -u #{user}"
+        base_cmd = "/usr/bin/env mysqldump --no-tablespaces --add-drop-table --create-options --disable-keys --extended-insert --single-transaction --quick --set-charset -h #{host} -P #{port} -u #{user}"
         cmd = ""
         cmd << base_cmd
         public_cmd = ""
